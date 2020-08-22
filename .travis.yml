@@ -1,3 +1,37 @@
-language: python
-script:
-  - pip install .
+# Travis CI build script - test on all supported platforms
+matrix:
+  include:
+    - name: "Linux"
+      os: linux
+      language: python
+      before_install:
+        - pip install -U pip coverage coveralls
+        - python --version
+      script:
+        - pip install .
+        - make coverage
+      after_success:
+        - coveralls
+    - name: "macOS"
+      os: osx
+      osx_image: xcode11.4
+      language: shell
+      before_install:
+        - pip3 install -U pip
+        - python3 --version
+      script:
+        - pip3 install .
+        - make PYTHON=python3 test
+    - name: "Windows"
+      os: windows
+      language: shell
+      env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
+      before_install:
+        - choco install make
+        - choco install python --version 3.6.8
+        - python --version
+        - python -m pip install --upgrade pip wheel
+        - python -m pip install torch==1.6.0+cpu torchvision==0.7.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      script:
+        - pip install .
+        - make test
